@@ -1,11 +1,7 @@
 import { Pool } from "pg";
 
 export const pool = new Pool({
-    user: process.env.USER_NAME,
-    host: process.env.HOST_NAME,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.PORT_NUMBER
+    connectionString: process.env.POSTGRES_URL + "?sslmode=require",
 })
 
 export default async function dbConnect(){
