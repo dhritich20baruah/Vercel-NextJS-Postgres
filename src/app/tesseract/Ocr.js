@@ -56,7 +56,7 @@ const Ocr = () => {
       {text && (
         <div>
           <h3>Extracted Text:</h3>
-          <p>{text}</p>
+          <textarea name="extracted" id="extracted" cols={80} rows={25}>{text}</textarea>
         </div>
       )}
     </div>
