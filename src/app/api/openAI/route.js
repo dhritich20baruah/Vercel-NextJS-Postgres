@@ -10,8 +10,7 @@ export async function POST(req, res) {
   }
 
   try {
-    const { prompt } = req.json();
-    console.log("prompt:",prompt)
+    const { prompt } = await req.json();
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -30,7 +29,7 @@ export async function POST(req, res) {
       }
     );
 
-    // console.log(response)
+    console.log(response)
     return NextResponse.json({ text: "response.data.choices[0].message.content" }, {status: 200});
   } catch (error) {
     console.error(error);

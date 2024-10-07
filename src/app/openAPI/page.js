@@ -10,15 +10,18 @@ export default function OpenAPI() {
     e.preventDefault();
     setLoading(true);
 
+    const promptObj = {
+      prompt: prompt
+    }
+    console.log(promptObj)
     try {
-      const res = await axios.post("/api/openAI", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
-      setResponse(data.text);
+      const res = await axios.post(`http://localhost:3000/api/openAI`, promptObj).then(
+        () => {
+          console.log(res)
+        }
+      )
+      // const data = await res.json();
+      // setResponse(data.text);
     } catch (error) {
       console.error("Error:", error);
     } finally {
