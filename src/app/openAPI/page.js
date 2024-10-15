@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
+
 export default function OpenAPI() {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");

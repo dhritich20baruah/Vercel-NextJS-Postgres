@@ -1,30 +1,29 @@
-const axios = require('axios');
+const { Configuration, OpenAIApi } = require("openai");
 
-const API_KEY = 'your-api-key-here';
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
 
-const getOpenAIResponse = async () => {
-  try {
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-4', // You can also use 'gpt-3.5-turbo'
-        messages: [
-          { role: 'system', content: 'You are a helpful assistant.' },
-          { role: 'user', content: 'What is the weather today?' },
-        ],
-        max_tokens: 100,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_KEY}`,
-        },
-      }
-    );
-    console.log(response.data.choices[0].message.content);
-  } catch (error) {
-    console.error('Error:', error);
-  }
-};
+export default async function handler(req, res) {
 
-getOpenAIResponse();
+    const { prompt } = req.body;
+    console.log(req);
+    try {
+      const result = await openai.createCompletion({
+        model: 'text-davinci-003',
+        prompt,
+        max_tokens: 150,
+        n: 1,
+        stop: null,
+        temperature: 0.5,
+      });
+
+      res.status(200).json(result.data.choices[0].text);
+   
+    } catch (error) {
+      console.error('Error in API:', error);
+      res.status(500).json({ message: 'An error occurred while processing the request.', error: error.message });
+    }
+
+}
