@@ -3,14 +3,17 @@ import dynamic from "next/dynamic";
 import Tesseract from "tesseract.js";
 import "react-quill/dist/quill.snow.css";
 import { saveAs } from "file-saver";
-import htmlDocx from 'html-docx-js'
+import * as htmlDocx from 'html-docx-js';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import html2canvas from 'html2canvas';
+import { useRouter } from "next/navigation";
 
 const Ocr = () => {
   const [image, setImage] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -64,27 +67,50 @@ const Ocr = () => {
     },
   };
 
-  const handleSaveAsWord = () => {
-    const content = document.querySelector('#editorWrapper .ql-editor').innerHTML;
-    const blob = htmlDocx.asBlob(content);
-    saveAs(blob, 'document.docx');
+  const handleCopyText = ()=> {
+    const editorContent = document.querySelector('.ql-editor')?.innerText;
+    if (!editorContent) return;
+
+    // Use Clipboard API to copy text to clipboard
+    navigator.clipboard.writeText(editorContent).then(
+        () => {
+            alert('Text copied to clipboard!');
+        },
+        (err) => {
+            console.error('Failed to copy text: ', err);
+        }
+    );
 };
 
-const handleSaveAsPDF = () => {
-  const content = document.querySelector('#editorWrapper .ql-editor').innerHTML;
-  const doc = new jsPDF();
 
-  doc.fromHTML(content, 15, 15, {
-      width: 170,
-      elementHandlers: {
-          '.ql-editor': function(element, renderer) {
-              return true;
-          }
-      }
+const handleSaveAsPDF = async () => {
+  const content = document.querySelector('#editorWrapper .ql-editor');
+  if (!content) return;
+
+  const canvas = await html2canvas(content);
+  const imgData = canvas.toDataURL('image/png');
+
+  // Create a PDF with jsPDF and add the image from canvas
+  const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'pt',
+      format: 'a4'
   });
 
-  doc.save('document.pdf');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  // Scale image to fit PDF page dimensions
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+  pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+  pdf.save('document.pdf');
 };
+
+const chooseNew = () => {
+  window.location.reload()
+}
 
   return (
     <div className="font-mono flex flex-col justify-center items-center w-full">
@@ -103,13 +129,12 @@ const handleSaveAsPDF = () => {
           accept="image/"
           onChange={handleImageUpload}
         />
+        {image && (<button className="shadow-lg shadow-black p-2 bg-red-700 m-5 text-white" onClick={chooseNew}>Choose another</button>)}
       </div>
-      <div className="md:flex w-[100%] m-10">
-        <div className="md:w-[40%] w-full shadow-lg shadow-black p-10 mx-10 rounded-md">
-          {" "}
+      <div className="md:flex w-[100%] md:m-10">
           {image && (
-            <div>
-              <img src={image} alt="Uploaded" style={{ maxWidth: "400px" }} />
+            <div className="md:w-[40%] w-full shadow-lg shadow-black p-10 md:mx-10 rounded-md">
+              <img src={image} alt="Uploaded" />
               <button
                 onClick={performOCR}
                 disabled={loading}
@@ -119,8 +144,8 @@ const handleSaveAsPDF = () => {
               </button>
             </div>
           )}
-        </div>
-        <div className="md:w-[60%] w-full">
+  
+        <div className="md:w-[60%] w-full my-5">
           {" "}
           {text && (
             <div>
@@ -139,8 +164,8 @@ const handleSaveAsPDF = () => {
                   </div>
               </div>
               <div className="mt-10">
-              <button className="shadow-lg shadow-black p-2 bg-red-700 m-5 text-white" onClick={handleSaveAsWord}>
-                Save as Word
+              <button className="shadow-lg shadow-black p-2 bg-red-700 m-5 text-white" onClick={handleCopyText}>
+                Copy Text
               </button>
               <button className="shadow-lg shadow-black p-2 bg-red-700 m-5 text-white" onClick={handleSaveAsPDF}>
                 Save as PDF
