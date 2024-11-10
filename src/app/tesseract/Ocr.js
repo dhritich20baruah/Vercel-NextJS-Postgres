@@ -2,18 +2,14 @@ import React, { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Tesseract from "tesseract.js";
 import "react-quill/dist/quill.snow.css";
-import { saveAs } from "file-saver";
-import * as htmlDocx from 'html-docx-js';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { useRouter } from "next/navigation";
+import CameraComponent from "./CameraComponent";
 
 const Ocr = () => {
   const [image, setImage] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const router = useRouter();
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -118,6 +114,7 @@ const chooseNew = () => {
         Extract Text From Image with Tesseract
       </h1>
       <div className="m-10 p-5 shadow-lg shadow-black rounded-md">
+        <div>
         <label htmlFor="image" className="text-lg">
           Choose Image to Extract Text
         </label>{" "}
@@ -128,8 +125,10 @@ const chooseNew = () => {
           id="image"
           accept="image/"
           onChange={handleImageUpload}
-        />
+          />
+        </div>
         {image && (<button className="shadow-lg shadow-black p-2 bg-red-700 m-5 text-white" onClick={chooseNew}>Choose another</button>)}
+        <div><CameraComponent/></div>
       </div>
       <div className="md:flex w-[100%] md:m-10">
           {image && (
